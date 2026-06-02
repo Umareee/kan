@@ -294,7 +294,6 @@ export const bulkCreate = async (
     listId: number;
     workspaceId: number;
     index: number;
-    importId?: number;
   }[],
 ) => {
   if (cardInput.length === 0) return [];
@@ -343,7 +342,6 @@ export const bulkCreate = async (
       listId: number;
       index: number;
       cardNumber: number;
-      importId?: number;
     }[] = [];
 
     // For each list, append incoming cards after current max index, preserving incoming order
@@ -371,7 +369,6 @@ export const bulkCreate = async (
           listId: it.listId,
           index: nextIndex++,
           cardNumber,
-          importId: it.importId,
         });
       }
     }

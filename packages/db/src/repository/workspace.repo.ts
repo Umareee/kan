@@ -233,18 +233,6 @@ export const getByPublicIdWithMembers = (
           },
         },
       },
-      subscriptions: {
-        columns: {
-          id: true,
-          plan: true,
-          status: true,
-          seats: true,
-          unlimitedSeats: true,
-          partnerTier: true,
-          periodStart: true,
-          periodEnd: true,
-        },
-      },
     },
     where: and(
       eq(workspaces.publicId, workspacePublicId),

@@ -51,7 +51,6 @@ import Filters from "./components/Filters";
 import List from "./components/List";
 import { NewCardForm } from "./components/NewCardForm";
 import { NewListForm } from "./components/NewListForm";
-import { NewTemplateForm } from "./components/NewTemplateForm";
 import UpdateBoardSlugButton from "./components/UpdateBoardSlugButton";
 import { UpdateBoardSlugForm } from "./components/UpdateBoardSlugForm";
 import VisibilityButton from "./components/VisibilityButton";
@@ -457,17 +456,6 @@ export default function BoardPage({ isTemplate }: { isTemplate?: boolean }) {
             workspaceSlug={workspace.slug ?? ""}
             boardSlug={boardData?.slug ?? ""}
             queryParams={queryParams}
-          />
-        </Modal>
-
-        <Modal
-          modalSize="sm"
-          isVisible={isOpen && modalContentType === "CREATE_TEMPLATE"}
-        >
-          <NewTemplateForm
-            workspacePublicId={workspace.publicId ?? ""}
-            sourceBoardPublicId={boardId ?? ""}
-            sourceBoardName={boardData?.name ?? ""}
           />
         </Modal>
 

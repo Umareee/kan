@@ -34,16 +34,6 @@ const workspaceMemberDetailSchema = z.object({
     .nullable(),
 });
 
-const workspaceSubscriptionSchema = z.object({
-  plan: z.string(),
-  status: z.string(),
-  seats: z.number().nullable(),
-  unlimitedSeats: z.boolean().nullable(),
-  partnerTier: z.number().nullable(),
-  periodStart: z.date().nullable(),
-  periodEnd: z.date().nullable(),
-});
-
 export const workspaceDetailSchema = z.object({
   publicId: z.string(),
   name: z.string(),
@@ -51,7 +41,6 @@ export const workspaceDetailSchema = z.object({
   showEmailsToMembers: z.boolean().nullable(),
   weekStartDay: z.number().nullable(),
   members: z.array(workspaceMemberDetailSchema),
-  subscriptions: z.array(workspaceSubscriptionSchema),
 });
 
 // ─── workspace.bySlug ────────────────────────────────────────

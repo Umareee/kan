@@ -3,7 +3,6 @@ import { t } from "@lingui/core/macro";
 import {
   HiEllipsisHorizontal,
   HiLink,
-  HiOutlineDocumentDuplicate,
   HiOutlineTrash,
   HiOutlineStar,
   HiStar,
@@ -33,7 +32,7 @@ export default function BoardDropdown({
   const router = useRouter();
   const { openModal } = useModal();
   const { showPopup } = usePopup();
-  const { canEditBoard, canDeleteBoard, canCreateBoard, canArchiveBoard } =
+  const { canEditBoard, canDeleteBoard, canArchiveBoard } =
     usePermissions();
   const utils = api.useUtils();
 
@@ -88,17 +87,6 @@ export default function BoardDropdown({
   const isArchiveActionPending = updateBoard.isPending;
 
   const items = [
-    ...(isTemplate && canCreateBoard
-      ? [
-        {
-          label: t`Make template`,
-          action: () => openModal("CREATE_TEMPLATE"),
-          icon: (
-            <HiOutlineDocumentDuplicate className="h-[16px] w-[16px] text-dark-900" />
-          ),
-        },
-      ]
-      : []),
     ...(!isTemplate && canEditBoard
       ? [
         {

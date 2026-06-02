@@ -1,4 +1,3 @@
-import { useRouter, useSearchParams } from "next/navigation";
 import { t } from "@lingui/core/macro";
 import { env } from "next-runtime-env";
 import { useTheme } from "next-themes";
@@ -14,7 +13,6 @@ import { authClient } from "@kan/auth/client";
 
 import { useClickOutside } from "~/hooks/useClickOutside";
 import { useModal } from "~/providers/modal";
-import { usePopup } from "~/providers/popup";
 import { useWorkspace, WorkspaceProvider } from "~/providers/workspace";
 import { api } from "~/utils/api";
 import { ChangePasswordFormConfirmation } from "~/views/settings/components/ChangePasswordConfirmation";
@@ -50,9 +48,6 @@ export default function Dashboard({
   const { resolvedTheme } = useTheme();
   const { openModal, closeModal, modalContentType } = useModal();
   const { availableWorkspaces, hasLoaded } = useWorkspace();
-  const { showPopup } = usePopup();
-  const router = useRouter();
-  const searchParams = useSearchParams();
 
   const { data: session, isPending: sessionLoading } = authClient.useSession();
   const { data: user, isLoading: userLoading } = api.user.getUser.useQuery(
@@ -107,48 +102,10 @@ export default function Dashboard({
   });
 
   useEffect(() => {
-    const partnerActivated = searchParams.get("partner_activated");
-    const partnerError = searchParams.get("partner_error");
-
-    if (partnerActivated) {
-      showPopup({
-        header: t`License activated`,
-        message: t`Your license has been activated successfully.`,
-        icon: "success",
-      });
-      const params = new URLSearchParams(searchParams.toString());
-      params.delete("partner_activated");
-      router.replace(`?${params.toString()}`);
-    } else if (partnerError) {
-      const messages: Record<string, string> = {
-        invalid_license: t`That license key could not be found. Please contact support.`,
-        license_inactive: t`Your license is not active. Please check your account.`,
-        missing_license: t`No license key was provided. Please try activating again.`,
-      };
-      showPopup({
-        header: t`License activation failed`,
-        message:
-          messages[partnerError] ??
-          t`Something went wrong during license activation.`,
-        icon: "error",
-      });
-      const params = new URLSearchParams(searchParams.toString());
-      params.delete("partner_error");
-      router.replace(`?${params.toString()}`);
-    }
-  }, [searchParams, showPopup, router]);
-
-  useEffect(() => {
     if (hasLoaded && availableWorkspaces.length === 0) {
-      if (env("NEXT_PUBLIC_KAN_ENV") === "cloud") {
-        router.push(
-          `/onboarding/select-plan?returnUrl=${encodeURIComponent(window.location.pathname)}`,
-        );
-      } else {
-        openModal("NEW_WORKSPACE", undefined, undefined, false);
-      }
+      openModal("NEW_WORKSPACE", undefined, undefined, false);
     }
-  }, [hasLoaded, availableWorkspaces.length, openModal, router]);
+  }, [hasLoaded, availableWorkspaces.length, openModal]);
 
   useEffect(() => {
     const isCredentialsEnabled =

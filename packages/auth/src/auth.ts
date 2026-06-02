@@ -49,14 +49,6 @@ export const initAuth = (db: dbClient) => {
       deleteUser: {
         enabled: true,
       },
-      additionalFields: {
-        stripeCustomerId: {
-          type: "string",
-          required: false,
-          defaultValue: null,
-          input: false,
-        },
-      },
     },
     plugins: createPlugins(db),
     databaseHooks: createDatabaseHooks(db),

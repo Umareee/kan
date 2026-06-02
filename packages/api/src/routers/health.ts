@@ -11,7 +11,6 @@ import * as cardActivityRepo from "@kan/db/repository/cardActivity.repo";
 import * as cardAttachmentRepo from "@kan/db/repository/cardAttachment.repo";
 import * as cardCommentRepo from "@kan/db/repository/cardComment.repo";
 import * as checklistRepo from "@kan/db/repository/checklist.repo";
-import * as importRepo from "@kan/db/repository/import.repo";
 import * as inviteLinkRepo from "@kan/db/repository/inviteLink.repo";
 import * as labelRepo from "@kan/db/repository/label.repo";
 import * as listRepo from "@kan/db/repository/list.repo";
@@ -135,7 +134,6 @@ export const healthRouter = createTRPCRouter({
         checklistItems: z.number(),
         activeMembers: z.number(),
         activeInviteLinks: z.number(),
-        imports: z.number(),
       }),
     )
     .query(async ({ ctx }) => {
@@ -155,7 +153,6 @@ export const healthRouter = createTRPCRouter({
           cardActivitiesCount,
           activeMembersCount,
           activeInviteLinksCount,
-          importsCount,
           cardActivityLogsCount,
         ] = await Promise.all([
           userRepo.getCount(ctx.db),
@@ -171,7 +168,6 @@ export const healthRouter = createTRPCRouter({
           cardActivityRepo.getCount(ctx.db),
           memberRepo.getActiveCount(ctx.db),
           inviteLinkRepo.getActiveCount(ctx.db),
-          importRepo.getCount(ctx.db),
           memberRepo.getActiveCount(ctx.db),
           cardActivityRepo.getCount(ctx.db),
         ]);
@@ -190,7 +186,6 @@ export const healthRouter = createTRPCRouter({
           cardActivities: cardActivitiesCount,
           activeMembers: activeMembersCount,
           activeInviteLinks: activeInviteLinksCount,
-          imports: importsCount,
           cardActivityLogs: cardActivityLogsCount,
         };
       } catch (error) {

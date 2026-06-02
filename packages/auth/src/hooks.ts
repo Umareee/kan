@@ -22,7 +22,6 @@ type BetterAuthUser = {
   emailVerified: boolean;
   name: string;
   image?: string | null | undefined;
-  stripeCustomerId?: string | null | undefined;
 } & Record<string, unknown>;
 
 export function createDatabaseHooks(db: dbClient) {
@@ -116,7 +115,6 @@ export function createDatabaseHooks(db: dbClient) {
                   avatar: avatarUrl,
                   data: {
                     emailVerified: user.emailVerified,
-                    stripeCustomerId: user.stripeCustomerId,
                     createdAt: user.createdAt,
                     updatedAt: user.updatedAt,
                   },

@@ -11,7 +11,6 @@ import {
 
 import { boards } from "./boards";
 import { cards } from "./cards";
-import { imports } from "./imports";
 import { users } from "./users";
 
 export const lists = pgTable("list", {
@@ -31,7 +30,6 @@ export const lists = pgTable("list", {
   boardId: bigint("boardId", { mode: "number" })
     .notNull()
     .references(() => boards.id, { onDelete: "cascade" }),
-  importId: bigint("importId", { mode: "number" }).references(() => imports.id),
 }).enableRLS();
 
 export const listsRelations = relations(lists, ({ one, many }) => ({
@@ -50,10 +48,5 @@ export const listsRelations = relations(lists, ({ one, many }) => ({
     fields: [lists.deletedBy],
     references: [users.id],
     relationName: "listsDeletedByUser",
-  }),
-  import: one(imports, {
-    fields: [lists.importId],
-    references: [imports.id],
-    relationName: "listsImport",
   }),
 }));

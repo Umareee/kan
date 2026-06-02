@@ -2,18 +2,13 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { Button } from "@headlessui/react";
 import { t } from "@lingui/core/macro";
-import { env } from "next-runtime-env";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
-import { HiBolt } from "react-icons/hi2";
 import {
   TbLayoutSidebarLeftCollapse,
   TbLayoutSidebarLeftExpand,
 } from "react-icons/tb";
 import { twMerge } from "tailwind-merge";
-
-import type { Subscription } from "@kan/shared/utils";
-import { hasActiveSubscription } from "@kan/shared/utils";
 
 import type { KeyboardShortcut } from "~/providers/keyboard-shortcuts";
 import boardsIconDark from "~/assets/boards-dark.json";
@@ -22,14 +17,9 @@ import membersIconDark from "~/assets/members-dark.json";
 import membersIconLight from "~/assets/members-light.json";
 import settingsIconDark from "~/assets/settings-dark.json";
 import settingsIconLight from "~/assets/settings-light.json";
-import templatesIconDark from "~/assets/templates-dark.json";
-import templatesIconLight from "~/assets/templates-light.json";
-import ButtonComponent from "~/components/Button";
 import ReactiveButton from "~/components/ReactiveButton";
 import UserMenu from "~/components/UserMenu";
 import WorkspaceMenu from "~/components/WorkspaceMenu";
-import { useWorkspace } from "~/providers/workspace";
-import { api } from "~/utils/api";
 
 interface SideNavigationProps {
   user: UserType;
@@ -49,18 +39,8 @@ export default function SideNavigation({
   onCloseSideNav,
 }: SideNavigationProps) {
   const router = useRouter();
-  const { workspace } = useWorkspace();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isInitialised, setIsInitialised] = useState(false);
-
-  const { data: workspaceData } = api.workspace.byId.useQuery(
-    { workspacePublicId: workspace.publicId },
-    { enabled: !!workspace.publicId && workspace.publicId.length >= 12 },
-  );
-
-  const subscriptions = workspaceData?.subscriptions as
-    | Subscription[]
-    | undefined;
 
   useEffect(() => {
     const savedState = localStorage.getItem("kan_sidebar-collapsed");
@@ -83,8 +63,6 @@ export default function SideNavigation({
 
   const { resolvedTheme } = useTheme();
 
-  const isCloudEnv = env("NEXT_PUBLIC_KAN_ENV") === "cloud";
-
   const isDarkMode = resolvedTheme === "dark";
 
   const navigation: {
@@ -103,18 +81,6 @@ export default function SideNavigation({
         action: () => router.push("/boards"),
         group: "NAVIGATION",
         description: t`Go to boards`,
-      },
-    },
-    {
-      name: t`Templates`,
-      href: "/templates",
-      icon: isDarkMode ? templatesIconDark : templatesIconLight,
-      keyboardShortcut: {
-        type: "SEQUENCE",
-        strokes: [{ key: "G" }, { key: "T" }],
-        action: () => router.push("/templates"),
-        group: "NAVIGATION",
-        description: t`Go to templates`,
       },
     },
     {
@@ -213,31 +179,6 @@ export default function SideNavigation({
             isCollapsed={isCollapsed}
             onCloseSideNav={onCloseSideNav}
           />
-          {isCloudEnv &&
-            !hasActiveSubscription(subscriptions, "pro") &&
-            !hasActiveSubscription(subscriptions, "team") && (
-              <div className={twMerge(isCollapsed && "flex justify-center")}>
-                {isCollapsed ? (
-                  <ButtonComponent
-                    iconLeft={<HiBolt />}
-                    variant="secondary"
-                    href={`/upgrade/select-plan?plan=pro&workspacePublicId=${workspace.publicId}&returnUrl=${encodeURIComponent("/settings/billing")}`}
-                    aria-label={t`Start free trial`}
-                    title={t`Start free trial`}
-                    iconOnly
-                  />
-                ) : (
-                  <ButtonComponent
-                    iconLeft={<HiBolt />}
-                    fullWidth
-                    variant="secondary"
-                    href={`/upgrade/select-plan?plan=pro&workspacePublicId=${workspace.publicId}&returnUrl=${encodeURIComponent("/settings/billing")}`}
-                  >
-                    {t`Start free trial`}
-                  </ButtonComponent>
-                )}
-              </div>
-            )}
         </div>
       </nav>
     </>

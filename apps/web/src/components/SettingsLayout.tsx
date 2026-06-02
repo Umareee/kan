@@ -7,13 +7,9 @@ import {
   ListboxOptions,
 } from "@headlessui/react";
 import { t } from "@lingui/core/macro";
-import { env } from "next-runtime-env";
 import { useEffect, useState } from "react";
 import {
   HiChevronDown,
-  HiOutlineBanknotes,
-  HiOutlineBolt,
-  HiOutlineCodeBracketSquare,
   HiOutlineRectangleGroup,
   HiOutlineShieldCheck,
   HiOutlineUser,
@@ -29,7 +25,7 @@ interface SettingsLayoutProps {
 export function SettingsLayout({ children, currentTab }: SettingsLayoutProps) {
   const router = useRouter();
   const { workspace } = useWorkspace();
-  const { canViewWorkspace, canEditWorkspace } = usePermissions();
+  const { canViewWorkspace } = usePermissions();
   const [selectedTabIndex, setSelectedTabIndex] = useState(0);
 
   const isAdmin = workspace.role === "admin";
@@ -52,30 +48,6 @@ export function SettingsLayout({ children, currentTab }: SettingsLayoutProps) {
       icon: <HiOutlineShieldCheck />,
       label: t`Permissions`,
       condition: isAdmin,
-    },
-    {
-      key: "billing",
-      label: t`Billing`,
-      icon: <HiOutlineBanknotes />,
-      condition: env("NEXT_PUBLIC_KAN_ENV") === "cloud" && isAdmin,
-    },
-    {
-      key: "api",
-      icon: <HiOutlineCodeBracketSquare />,
-      label: t`API`,
-      condition: true,
-    },
-    {
-      key: "webhooks",
-      icon: <HiOutlineBolt />,
-      label: t`Webhooks`,
-      condition: isAdmin,
-    },
-    {
-      key: "integrations",
-      icon: <HiOutlineCodeBracketSquare />,
-      label: t`Integrations`,
-      condition: canEditWorkspace,
     },
   ];
 

@@ -1,4 +1,4 @@
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { t } from "@lingui/core/macro";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
@@ -35,23 +35,9 @@ function slugify(value: string) {
 
 export default function WorkspaceNameView() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const plan = searchParams.get("plan") ?? "solo";
-  const billing = searchParams.get("billing") ?? "annual";
-  const returnUrl = searchParams.get("returnUrl") ?? "/boards";
-  const licenseKeyParam = searchParams.get("license_key");
-  const isLicenseFlow =
-    !!licenseKeyParam || searchParams.get("partner") === "1";
   const { showPopup } = usePopup();
 
-  useEffect(() => {
-    if (licenseKeyParam) {
-      localStorage.setItem("partnerLicenseKey", licenseKeyParam);
-    }
-  }, [licenseKeyParam]);
-
-  const [isProToggle, setIsProToggle] = useState(plan === "pro");
-  const effectivePlan = isProToggle ? "pro" : plan;
+  const [isProToggle, setIsProToggle] = useState(false);
 
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
@@ -86,10 +72,6 @@ export default function WorkspaceNameView() {
       ? t`This URL is reserved`
       : undefined;
 
-  const { data: session } = authClient.useSession();
-  const { data: user } = api.user.getUser.useQuery(undefined, {
-    enabled: !!session?.user,
-  });
   const { data: workspaces } = api.workspace.all.useQuery();
   const hasExistingWorkspace = !!workspaces?.length;
 
@@ -100,20 +82,11 @@ export default function WorkspaceNameView() {
     : "your-workspace";
 
   const createWorkspace = api.workspace.create.useMutation({
-    onSuccess: async (workspace) => {
+    onSuccess: (workspace) => {
       if (!workspace.publicId) return;
       localStorage.setItem("workspacePublicId", workspace.publicId);
       void utils.workspace.all.invalidate();
-      void utils.workspace.hasAvailablePartnerSlot.invalidate();
-      const storedLicenseKey = localStorage.getItem("partnerLicenseKey");
-      if (storedLicenseKey) {
-        localStorage.removeItem("partnerLicenseKey");
-        router.push(
-          `/api/partner/link?license_key=${encodeURIComponent(storedLicenseKey)}`,
-        );
-      } else {
-        router.push("/boards");
-      }
+      router.push("/boards");
     },
     onError: () => {
       showPopup({
@@ -124,59 +97,18 @@ export default function WorkspaceNameView() {
     },
   });
 
-  const [isRedirectingToCheckout, setIsRedirectingToCheckout] = useState(false);
-
-  const handleContinue = async () => {
+  const handleContinue = () => {
     if (!name.trim()) return;
 
-    if (effectivePlan === "solo" || isLicenseFlow) {
-      createWorkspace.mutate({
-        name: name.trim(),
-        ...(description.trim() && { description: description.trim() }),
-      });
-      return;
-    }
-
-    // team/pro: redirect to Stripe — workspace created on checkout_success
-    setIsRedirectingToCheckout(true);
-    try {
-      const response = await fetch("/api/stripe/create_checkout_session", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          workspaceName: name.trim(),
-          ...(description.trim() && {
-            workspaceDescription: description.trim(),
-          }),
-          ...(effectivePlan === "pro" && slug ? { workspaceSlug: slug } : {}),
-          cancelUrl: `${window.location.pathname}?plan=${effectivePlan}&billing=${billing}&returnUrl=${encodeURIComponent(returnUrl)}`,
-          successUrl: "/boards",
-          billing,
-          plan: effectivePlan,
-        }),
-      });
-      const data = await response.json();
-      const url = (data as { url: string }).url;
-      if (url) {
-        window.location.href = url;
-        return;
-      }
-    } catch {
-      // fall through
-    }
-    setIsRedirectingToCheckout(false);
-    showPopup({
-      header: t`Unable to start checkout`,
-      message: t`Please try again later, or contact customer support.`,
-      icon: "error",
+    createWorkspace.mutate({
+      name: name.trim(),
+      ...(description.trim() && { description: description.trim() }),
     });
   };
 
   useEffect(() => {
     document.getElementById("workspace-name-input")?.focus();
   }, []);
-
-  const displayName = user?.name ?? session?.user.name ?? "";
 
   const BOARDS = [t`Roadmap`, t`Engineering`, t`Marketing`];
   const [visibleCount, setVisibleCount] = useState(1);
@@ -212,8 +144,7 @@ export default function WorkspaceNameView() {
                   maxLength={64}
                 />
 
-                {!isLicenseFlow && (
-                  <div className="space-y-2">
+                <div className="space-y-2">
                     <Input
                       placeholder={t`your-workspace`}
                       value={isProToggle ? slug : t`your-workspace`}
@@ -254,19 +185,16 @@ export default function WorkspaceNameView() {
                         ) : null
                       }
                     />
-                  </div>
-                )}
+                </div>
 
-                {!isLicenseFlow && plan !== "pro" && (
-                  <div className="pb-2">
-                    <Toggle
-                      isChecked={isProToggle}
-                      onChange={() => setIsProToggle((v) => !v)}
-                      label={t`Upgrade to Pro ($29/month)`}
-                      labelPosition="after"
-                    />
-                  </div>
-                )}
+                <div className="pb-2">
+                  <Toggle
+                    isChecked={isProToggle}
+                    onChange={() => setIsProToggle((v) => !v)}
+                    label={t`Use a custom workspace URL`}
+                    labelPosition="after"
+                  />
+                </div>
 
                 <div>
                   <textarea
@@ -286,31 +214,16 @@ export default function WorkspaceNameView() {
 
             <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
               <div className="ml-auto flex gap-2">
-                {!isLicenseFlow && (
-                  <Button
-                    variant="ghost"
-                    onClick={() =>
-                      router.replace(
-                        `/onboarding/select-plan?plan=${effectivePlan}&billing=${billing}&returnUrl=${encodeURIComponent(returnUrl)}`,
-                      )
-                    }
-                  >
-                    {t`Back`}
-                  </Button>
-                )}
                 <Button
-                  onClick={() => void handleContinue()}
+                  onClick={() => handleContinue()}
                   disabled={
                     !name.trim() ||
                     createWorkspace.isPending ||
-                    isRedirectingToCheckout ||
                     (isProToggle &&
                       slug.length >= 3 &&
                       (isTyping || slugAvailability.isPending || !!slugError))
                   }
-                  isLoading={
-                    createWorkspace.isPending || isRedirectingToCheckout
-                  }
+                  isLoading={createWorkspace.isPending}
                 >
                   {t`Continue`}
                 </Button>

@@ -15,7 +15,6 @@ import {
 
 import { boards } from "./boards";
 import { workspaceMemberPermissions, workspaceRoles } from "./permissions";
-import { subscription } from "./subscriptions";
 import { users } from "./users";
 
 export const memberRoles = ["admin", "member", "guest"] as const;
@@ -78,7 +77,6 @@ export const workspaceRelations = relations(workspaces, ({ one, many }) => ({
   }),
   members: many(workspaceMembers),
   boards: many(boards),
-  subscriptions: many(subscription),
   roles: many(workspaceRoles),
 }));
 

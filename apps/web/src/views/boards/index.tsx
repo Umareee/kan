@@ -5,11 +5,10 @@ import {
   ListboxOptions,
 } from "@headlessui/react";
 import { t } from "@lingui/core/macro";
-import { HiArrowDownTray, HiChevronDown, HiOutlinePlusSmall } from "react-icons/hi2";
+import { HiChevronDown, HiOutlinePlusSmall } from "react-icons/hi2";
 import { useState } from "react";
 
 import Button from "~/components/Button";
-import FeedbackModal from "~/components/FeedbackModal";
 import Modal from "~/components/modal";
 import { NewWorkspaceForm } from "~/components/NewWorkspaceForm";
 import { PageHead } from "~/components/PageHead";
@@ -19,7 +18,6 @@ import { useKeyboardShortcut } from "~/providers/keyboard-shortcuts";
 import { useModal } from "~/providers/modal";
 import { useWorkspace } from "~/providers/workspace";
 import { BoardsList } from "./components/BoardsList";
-import { ImportBoardsForm } from "./components/ImportBoardsForm";
 import { NewBoardForm } from "./components/NewBoardForm";
 
 const boardsTabs = [
@@ -53,27 +51,6 @@ export default function BoardsPage({ isTemplate }: { isTemplate?: boolean }) {
             {t`${isTemplate ? "Templates" : "Boards"}`}
           </h1>
           <div className="flex gap-2">
-            {!isTemplate && (
-              <Tooltip
-                content={
-                  !canCreateBoard ? t`You don't have permission` : undefined
-                }
-              >
-                <Button
-                  type="button"
-                  variant="secondary"
-                  onClick={() => {
-                    if (canCreateBoard) openModal("IMPORT_BOARDS");
-                  }}
-                  disabled={!canCreateBoard}
-                  iconLeft={
-                    <HiArrowDownTray aria-hidden="true" className="h-4 w-4" />
-                  }
-                >
-                  {t`Import`}
-                </Button>
-              </Tooltip>
-            )}
             <Tooltip
               content={
                 !canCreateBoard
@@ -100,24 +77,10 @@ export default function BoardsPage({ isTemplate }: { isTemplate?: boolean }) {
 
         <>
           <Modal
-            modalSize="md"
-            isVisible={isOpen && modalContentType === "NEW_FEEDBACK"}
-          >
-            <FeedbackModal />
-          </Modal>
-
-          <Modal
             modalSize="sm"
             isVisible={isOpen && modalContentType === "NEW_BOARD"}
           >
-            <NewBoardForm isTemplate={!!isTemplate} />
-          </Modal>
-
-          <Modal
-            modalSize="sm"
-            isVisible={isOpen && modalContentType === "IMPORT_BOARDS"}
-          >
-            <ImportBoardsForm />
+            <NewBoardForm />
           </Modal>
 
           <Modal
